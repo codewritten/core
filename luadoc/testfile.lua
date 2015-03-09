@@ -1,4 +1,6 @@
 sskfl
+-- normal lua comment.
+--
 lkasjkj
 laksjdlaksjdl
 a
@@ -9,6 +11,8 @@ a
 --- @param	y 	string  not a y coordinate even though it seems
 --- obvious.
 --- @return number some value I don't care about.
+
+-- normal lua comment.
 
 should generate here on the first non-blank non comment line.
 
