@@ -26,7 +26,7 @@ should generate here on the first non-blank non comment line.
 --- @param 	x 	number 	x coordinate
 --- @param	y 	string  not a y coordinate even though it seems
 --- obvious.
---- @param  zzzz want to sleep now.
+--- @param  zzzz table/ref want to sleep now.
 --- @return number some value I don't care about.
 
 blah blah blah blah

@@ -21,7 +21,31 @@ class MethodDefinition:
 		self.parameters = []														# tuples name,type,description
 
 	def process(self,line):
-		print(self,line)
+		match = re.match("^method\\s+(\\S+)\\s+(.*)$",line)							# match method <name> <desc>
+		ok = False
+		if match is not None:
+			self.method = match.groups()
+			self.methodName = self.method[0]
+			ok = True
+		match = re.match("^param\\s+(\\S+)\\s+(\\S+)\\s+(.*)$",line)				# match param <name> <type> <desc>
+		if match is not None:
+			self.parameters.append(match.groups())
+			ok = True
+		match = re.match("^return\\s+(\\S+)\\s+(.*)$",line)
+		if match is not None:														# match return <type> <desc>
+			self.returnValue = match.groups()
+			ok = True
+		if not ok:																	# doesn't match
+			raise Exception("Cannot process '"+line+"'")
+
+	def toHTML(self,txt):
+		return "<p>"+(txt.replace("|","</p><p>"))+"</p>"							# text -> HTML.
+
+	def dump(self):
+		print(self.methodName)														# just for debugging.
+		print(self.method)
+		print(self.returnValue)
+		print(self.parameters)
 
 class DocumentationGenerator:
 	def __init__(self,fileName):
@@ -45,6 +69,7 @@ class DocumentationGenerator:
 		for line in source:															# work through.
 			if line == "render":													# output a doc object ?
 				self.docObjects.append(currentDocObject)							# append to list.
+				currentDocObject.dump()
 				currentDocObject = None 											# no current.
 			else:
 				if currentDocObject is None:										# create if required.
