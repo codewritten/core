@@ -21,8 +21,11 @@ for r = 1,runs do 																	-- run the tests.
 	obj = math.random(1,objectCount)												-- pick an object
 	if objectRefs[obj] == nil then 													-- if it doesn't exist.
 		objectRefs[obj] = baseObject.__new(classNames[math.random(1,classCount)])	-- create one randomly.
+		assert(objectRefs[obj]:__isAlive() == true)
 	else 
+		assert(objectRefs[obj]:__isAlive() == true)
 		objectRefs[obj]:destroy()													-- otherwise destroy and null it.
+		assert(objectRefs[obj]:__isAlive() == false)
 		objectRefs[obj] = nil
 	end
 
