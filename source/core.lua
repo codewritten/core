@@ -79,7 +79,7 @@ function baseObject.__new(name,consData)
 end
 
 -- **************************************************************************************************************
---- @method 	[ROOT].__destroy()
+--- @method 	[ROOT].__destroy
 ---	Destroys the referred object - clearing the alive flag, removing from the index, calling the destructor
 ---	defined.
 -- **************************************************************************************************************
@@ -87,15 +87,20 @@ end
 function parentClass:destroy() 
 	assert(self.__isAliveFlag,"Object has been destroyed already.")					-- can't destroy twice.
 	self.__isAliveFlag = false 														-- mark as not alive.
-	index._object[self] = nil 														-- remove from index
-	indexCount._object = indexCount._object - 1 									-- adjust the index count.
+	local key
+	for key,_ in pairs(index) do 													-- check every index.
+		if index[key][self] ~= nil then												-- is it in that index ?
+			index[key][self] = nil 													-- remove from index
+			indexCount[key] = indexCount[key] - 1 									-- adjust the index count.
+		end
+	end
 	if self.__destructor ~= nil then 												-- if destructor exists
 		self:__destructor()															-- call it
 	end
 end
 
 -- **************************************************************************************************************
---- @method 	[ROOT].__isAlive()
+--- @method 	[ROOT].__isAlive
 ---	Checks to see if the referenced object is still alive.
 ---	@return 	boolean 	true if it is still alive.
 -- **************************************************************************************************************
@@ -103,6 +108,38 @@ end
 function parentClass:__isAlive()
 	return self.__isAliveFlag														-- just returns the alive flag.
 end 
+
+-- **************************************************************************************************************
+--- @method 	[ROOT].__tag
+---	Tags the object with the given tag name. (case does not matter)
+---	@param 		tagName 	string 	name of tag to tag object with
+-- **************************************************************************************************************
+
+function parentClass:__tag(tagName)
+	assert(tagName ~= nil and type(tagName) == "string")							-- parameter check.
+	tagName = tagName:lower() 														-- make lower case.
+	if index[tagName] == nil then index[tagName] = {} indexCount[tagName] = 0 end 	-- if tag index doesn't exist create it.
+	if index[tagName][self] == nil then 											-- if not tagged with that tag Name
+		index[tagName][self] = self 												-- put it in the index
+		indexCount[tagName] = indexCount[tagName] + 1 								-- update the index count.
+	end	
+end
+
+-- **************************************************************************************************************
+--- @method 	[ROOT].__untag
+---	Untags the object with the given tag name. (case does not matter)
+---	@param 		tagName 	string 	name of tag to untag from object
+-- **************************************************************************************************************
+
+function parentClass:__untag(tagName)
+	assert(tagName ~= nil and type(tagName) == "string")							-- parameter check.
+	tagName = tagName:lower() 														-- make lower case.
+	if index[tagName] == nil then index[tagName] = {} indexCount[tagName] = 0 end 	-- if tag index doesn't exist create it.
+	if index[tagName][self] ~= nil then 											-- if tagged with that tag Name
+		index[tagName][self] = nil 													-- remove it from the index
+		indexCount[tagName] = indexCount[tagName] - 1 								-- update the index count.
+	end	
+end
 
 require("_test")
 
