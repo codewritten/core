@@ -133,7 +133,7 @@ class DocumentationGenerator:
 fileList = []																		# find all .lua files.
 for root,dirs,files in os.walk("."):
 	for f in files:
-		if f[-4:] == ".lua" and f[0] != "_" and f != "main.lua":
+		if f[-4:] == ".lua" and f[0] != "_" and f != "main.lua" and f != "config.lua":
 			fileList.append(root+os.sep+f)
 dc = DocumentationGenerator()														# create a documentation gen.
 for f in fileList:																	# parse all the files into it.
