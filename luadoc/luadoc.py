@@ -6,12 +6,12 @@
 #	Purpose:	Scans lua files generating documentation in HTML from inline comments.
 #	Created: 	9th March 2015
 #	Released:	-
-#	Version:	0.1
+#	Version:	1.0
 #
 #  **************************************************************************************************************
 #  **************************************************************************************************************
 
-import re,datetime
+import re,datetime,os
 
 class MethodDefinition:
 	def __init__(self):
@@ -117,15 +117,34 @@ class DocumentationGenerator:
 		render = render + '</html>\n'
 		if fileName is not None:
 			open(fileName,"w").write(render)
+		cssText = """
+			body {	 font-family:Arial,helvetica, sans-serif; }
+			#title { font-size: 1.6em;margin-top:8px;padding-top:4px;padding-bottom:4px;background-color: #EAF2D3; 
+		 			 border-top:1px solid black;border-bottom:1px solid black;}
+			#body {  color:black;padding: 4px 4px 4px 4px; }
+			table {	 border-collapse: collapse;   }
+			th {	 text-align: left;padding: 3px 7px 2px 7px;background-color: #A7C942;color: #ffffff; }
+			td {     border: 1px solid #98bf21;padding: 3px 7px 2px 7px; }
+			tr.alt { color: #000000;background-color: #EAF2D3;}
+		"""
+		open("luadoc.css","w").write(cssText)
 		return render
 
-dc = DocumentationGenerator()
-dc.parse("testfile.lua")
-dc.render()
+fileList = []																		# find all .lua files.
+for root,dirs,files in os.walk("."):
+	for f in files:
+		if f[-4:] == ".lua" and f[0] != "_":
+			fileList.append(root+os.sep+f)
+dc = DocumentationGenerator()														# create a documentation gen.
+for f in fileList:																	# parse all the files into it.
+	print("Parsing "+f+" ....")
+	dc.parse(f)
+dc.render()																			# and render HTML and CSS
 
 #  **************************************************************************************************************
 #	Date		Version		Notes
 #	====		=======		=====
 #	09-Mar-15	0.1 		First created
+#	11-Mar-15 	1.0 		First working version.
 #
 #  **************************************************************************************************************
