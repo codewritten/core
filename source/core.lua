@@ -23,8 +23,15 @@ parentClass.__index = parentClass
 local index = { _object = {} } 														-- tag name => index data
 local indexCount = { _object = 0 } 													-- tag name => index count
 
+local SLOW_TICK_FREQUENCY = 12 														-- speed of slow tick.
+
 baseObject.__index = index 															-- make index accessible for
 baseObject.__indexCount = indexCount 												-- helper functions.
+baseObject.__parentClass = parentClass
+
+baseObject.__lastTick = 0 baseObject.__lastSlowTick = 0 							-- reset last tick/last slow tick times
+baseObject.__nextSlowTick = 0 														-- time of next slow tick.
+baseObject.__executeFailed = false 													-- set when event handler failed.
 
 -- **************************************************************************************************************
 --- @method 	[BASE].__registerClass
@@ -141,7 +148,51 @@ function parentClass:__untag(tagName)
 	end	
 end
 
-require("_test")
+-- **************************************************************************************************************
+--- @method 	[ROOT].__query
+--- Query the tag database for all objects tagged with a given tag. 
+--- @param tagName string Name of tag to query for (defaults to _object)
+--- @return count,table number of objects fitting that query and a ref->ref hash table of objects
+-- **************************************************************************************************************
+
+function parentClass:__query(tagName)
+	tagName = tagName or "_object"													-- default
+	assert(tagName ~= nil and type(tagName) == "string")							-- parameter check.
+	tagName = tagName:lower() 														-- make lower case.
+	if index[tagName] == nil then return 0,{} end 									-- tag unknown, return nothing.
+	return indexCount[tagName],index[tagName]										-- otherwise return count & index
+end 
+
+-- **************************************************************************************************************
+--				Handles ticks, despatching to tick and slowtick tagged objects appropriately.
+-- **************************************************************************************************************
+
+Runtime:addEventListener("enterFrame",function()
+	if baseObject.__executeFailed then return end 									-- exec failed
+	local currentTime = system.getTimer() 											-- time elapsed in ms since start
+	baseObject.__tickProcess("tick",baseObject.__lastTick,currentTime)				-- process the fast tick.
+	baseObject.__lastTick = currentTime
+	if currentTime > baseObject.__nextSlowTick then 								-- time for a slow tick.
+		baseObject.__nextSlowTick = currentTime + 1000 / SLOW_TICK_FREQUENCY 		-- update next slow fire time
+		baseObject.__tickProcess("slowtick",baseObject.__lastSlowTick,currentTime) 	-- process the slow tick
+		baseObject.__lastSlowTick = currentTime
+	end
+end)
+
+-- **************************************************************************************************************
+--- @method 	[BASE].__tickProcess
+--- Dispatch ticks. For a given tag, call onUpdate(deltaTime) for each object tagged with that tag.
+--- @param tickType string	tag to send onUpdate messages to
+--- @param lastTime number  time of last update
+--- @param currentTime number current time
+-- **************************************************************************************************************
+
+function baseObject.__tickProcess(tickType,lastTime,currentTime)
+	if tickType == "slowtick" then print(lastTime,currentTime,currentTime - lastTime) end
+	-- TODO: Check __executeFailed
+end
+
+--require("_test")
 
 --[[
 class = baseObject.__registerClass("demo.class")

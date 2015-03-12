@@ -70,7 +70,25 @@ for r = 1,runs do 																	-- run the tests.
 				assert(baseObject.__index[tagNames[tag]][objectRefs[i]] ~= nil)
 			end
 		end 
+		if baseObject.__indexCount[tagNames[tag]] == nil then 
+			assert(c == 0)
+		else
+			assert(baseObject.__indexCount[tagNames[tag]] == c)
+		end
 	end
+
+	-- run and test result of a query.
+
+	tag = math.random(1,tagCount)
+	count,hash = baseObject.__parentClass:__query(tagNames[tag])
+	c = 0
+	for i = 1,objectCount do
+		if objectHasTag[i][tag] then 
+			c = c + 1 
+			assert(baseObject.__index[tagNames[tag]][objectRefs[i]] == objectRefs[i])
+		end
+	end
+	assert(c == count)
 
 	-- Check the _object index is maintained correctly.
 																					-- check the _object index.
@@ -84,8 +102,6 @@ for r = 1,runs do 																	-- run the tests.
 		end
 	end
 	assert(baseObject.__indexCount._object == c)									-- check the object counts match
-
-
 
 	-- Check the index counts are correct
 
